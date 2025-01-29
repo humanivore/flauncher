@@ -1,6 +1,8 @@
 package com.example.flauncher
 
-import android.content.pm.ApplicationInfo
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,25 +12,38 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat.startActivity
 import com.example.flauncher.ui.theme.FlauncherTheme
 
 class MainActivity : ComponentActivity() {
@@ -36,19 +51,20 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             FlauncherTheme {
-                Column {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     Surface(
                         modifier = Modifier
                             .padding(20.dp)
                             .height((LocalConfiguration.current.screenHeightDp * 0.725f).dp)
                     ) {
-                        AppList(getInstalledApps())
+                        Column {
+                            Spacer(modifier = Modifier.height(400.dp))
+                            AppSearchButton(modifier = Modifier.height(30.dp))
+                        }
                     }
-                    Spacer(
-                        modifier = Modifier.height(
-                            (LocalConfiguration.current.screenHeightDp * 0.05f).dp
-                        )
-                    )
+
                     Surface(
                         modifier = Modifier.height(
                             (LocalConfiguration.current.screenHeightDp * 0.225f).dp
@@ -60,53 +76,48 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
-    private fun getInstalledApps(): MutableList<App> {
-        val list = mutableListOf<App>()
-        val appInfoList = packageManager.getInstalledPackages(0)
-        appInfoList.forEach { appInfo ->
-            if (appInfo!!.applicationInfo!!.flags and ApplicationInfo.FLAG_SYSTEM == 0) {
-                val appName = appInfo.applicationInfo!!.loadLabel(packageManager).toString()
-                val packageName = appInfo.applicationInfo!!.packageName
-                val icon = appInfo.applicationInfo!!.loadIcon(packageManager)
-
-                val app = App(appName, packageName, icon, -1)
-                if (!list.contains(app)) {
-                    list.add(app)
-                }
-            }
-        }
-        return list
-    }
 }
 
 @Composable
-fun AppListCard(app: App, modifier: Modifier = Modifier) {
-    Card {
-        Text(
-            text = app.name,
-            modifier = Modifier.padding(16.dp),
-            style = MaterialTheme.typography.bodySmall
+fun AppSearchButton(modifier: Modifier = Modifier) {
+    val ctx = LocalContext.current
+    Button(onClick = {
+        val intent = Intent(ctx, SearchActivity::class.java)
+        startActivity(ctx, intent, null)
+    }) {
+        Icon(
+            Icons.Default.Search,
+            "search",
         )
     }
 }
 
-@Composable
-fun AppList(appList: MutableList<App>, modifier: Modifier = Modifier) {
-    LazyColumn {
-        items(appList) { app ->
-            AppListCard(app)
-        }
-    }
-}
 
-@Preview
-@Composable
-fun PreviewAppList() {
-    FlauncherTheme {
-        AppList(SampleDockApps.mutableApps)
-    }
-}
+//@Composable
+//fun AppSearchBar() {
+//    Surface {
+//        Row(
+//            horizontalArrangement = Arrangement.SpaceAround,
+//            verticalAlignment = Alignment.CenterVertically,
+//            modifier = Modifier
+//                .padding(horizontal = 10.dp)
+//        ) {
+//            Icon(
+//                Icons.Default.Search,
+//                "search",
+//            )
+//            AppSearchInput()
+//        }
+//    }
+//}
+
+//@Preview
+//@Composable
+//fun PreviewAppSearchBar() {
+//    FlauncherTheme {
+//        AppSearchBar()
+//    }
+//}
 
 @Composable
 fun HomeArea(apps: List<App>) {
